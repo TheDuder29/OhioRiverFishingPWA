@@ -26,39 +26,6 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Download missing fish images
-        run: |
-          UA="OhioRiverFishingPWA/1.0 (https://github.com/TheDuder29/OhioRiverFishingPWA)"
-          IMG="OhioRiverFishingPWA/wwwroot/images"
-
-          # Walleye - try full file then accepted thumbnail sizes
-          for URL in \
-            "https://upload.wikimedia.org/wikipedia/commons/9/96/Sander_vitreus.jpg" \
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Sander_vitreus.jpg/1200px-Sander_vitreus.jpg" \
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Sander_vitreus.jpg/640px-Sander_vitreus.jpg"; do
-            HTTP=$(curl -s -o "$IMG/walleye.jpg" -w "%{http_code}" -A "$UA" "$URL")
-            if [ "$HTTP" = "200" ] && [ $(wc -c < "$IMG/walleye.jpg") -gt 10000 ]; then
-              echo "Walleye OK ($HTTP): $URL"; break
-            else
-              echo "Walleye FAIL ($HTTP): $URL"
-            fi
-          done
-
-          # Flathead Catfish - try full file then accepted thumbnail sizes
-          for URL in \
-            "https://upload.wikimedia.org/wikipedia/commons/8/84/Pylodictis_olivaris.jpg" \
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Pylodictis_olivaris.jpg/1200px-Pylodictis_olivaris.jpg" \
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Pylodictis_olivaris.jpg/640px-Pylodictis_olivaris.jpg"; do
-            HTTP=$(curl -s -o "$IMG/flathead-catfish.jpg" -w "%{http_code}" -A "$UA" "$URL")
-            if [ "$HTTP" = "200" ] && [ $(wc -c < "$IMG/flathead-catfish.jpg") -gt 10000 ]; then
-              echo "Flathead OK ($HTTP): $URL"; break
-            else
-              echo "Flathead FAIL ($HTTP): $URL"
-            fi
-          done
-
-          ls -lh "$IMG/"*.jpg
-
       - name: Restore dependencies
         run: dotnet restore OhioRiverFishingPWA/OhioRiverFishingPWA.csproj
 
