@@ -19,7 +19,7 @@ else
         <MudCard Elevation="3" Class="mb-4" Style="border-radius:10px; overflow:hidden;">
             <MudGrid Spacing="0">
                 <MudItem xs="12" sm="4">
-                    <img src="@(string.IsNullOrEmpty(fish.ImageUrl) ? "https://placehold.co/400x250/1565c0/ffffff?text=" + Uri.EscapeDataString(fish.Species) : fish.ImageUrl)"
+                    <img src="@fish.ImageUrl"
                          style="width:100%; height:220px; object-fit:cover;"
                          alt="@fish.Species"
                          onerror="this.onerror=null; this.src='https://placehold.co/400x250/1565c0/ffffff?text=Image+Missing';" />
