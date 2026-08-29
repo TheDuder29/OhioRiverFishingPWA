@@ -27,7 +27,8 @@
       "PowerShell(Invoke-WebRequest -Uri \"http://localhost:5279\" -UseBasicParsing -TimeoutSec 5)",
       "WebFetch(domain:commons.wikimedia.org)",
       "WebFetch(domain:upload.wikimedia.org)",
-      "PowerShell(gh auth status 2>&1)"
+      "PowerShell(gh auth status 2>&1)",
+      "PowerShell(gh api repos/TheDuder29/OhioRiverFishingPWA/pages -X POST --field build_type=workflow 2>&1)"
     ]
   }
 }
