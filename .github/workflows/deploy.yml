@@ -65,17 +65,45 @@ jobs:
       - name: Publish
         run: dotnet publish OhioRiverFishingPWA/OhioRiverFishingPWA.csproj -c Release -o publish --nologo
 
-      - name: Fix base href for GitHub Pages
+      - name: Fix base href and update SRI hash in service worker manifest
         run: |
-          python3 -c "
-          import re, pathlib
+          python3 << 'EOF'
+          import re, pathlib, hashlib, base64, json
+
+          # 1. Update base href in index.html
           f = pathlib.Path('publish/wwwroot/index.html')
-          html = f.read_text()
-          html = re.sub(r'<base\s+href=[\"\']/[\"\']\s*/>', '<base href=\"/OhioRiverFishingPWA/\" />', html)
-          f.write_text(html)
-          print('base href set to /OhioRiverFishingPWA/')
-          print(html[html.find('<base'):html.find('<base')+60])
-          "
+          html = f.read_bytes()
+          html_str = html.decode('utf-8')
+          html_str = re.sub(r'<base\s+href="/"', '<base href="/OhioRiverFishingPWA/"', html_str)
+          f.write_text(html_str, encoding='utf-8')
+          print('base href updated')
+
+          # 2. Recompute SHA-256 of modified index.html
+          new_bytes = f.read_bytes()
+          new_hash = 'sha256-' + base64.b64encode(hashlib.sha256(new_bytes).digest()).decode()
+          print(f'New index.html hash: {new_hash}')
+
+          # 3. Patch service-worker-assets.js with the new hash
+          sw = pathlib.Path('publish/wwwroot/service-worker-assets.js')
+          if sw.exists():
+              content = sw.read_text(encoding='utf-8')
+              # Strip JS wrapper: "self.assetsManifest = {...};"
+              json_str = re.sub(r'^self\.assetsManifest\s*=\s*', '', content.strip().rstrip(';'))
+              manifest = json.loads(json_str)
+              updated = 0
+              for asset in manifest.get('assets', []):
+                  if asset.get('url') in ('index.html', './index.html', '_index.html'):
+                      old = asset.get('hash', 'none')
+                      asset['hash'] = new_hash
+                      print(f'Updated asset hash: {old} -> {new_hash}')
+                      updated += 1
+              if updated == 0:
+                  print('WARNING: index.html entry not found in service-worker-assets.js')
+                  print('Assets found:', [a.get('url') for a in manifest.get('assets', [])][:10])
+              sw.write_text('self.assetsManifest = ' + json.dumps(manifest) + ';', encoding='utf-8')
+          else:
+              print('service-worker-assets.js not found, skipping hash update')
+          EOF
 
       - name: Add 404.html for SPA routing
         run: cp publish/wwwroot/index.html publish/wwwroot/404.html
