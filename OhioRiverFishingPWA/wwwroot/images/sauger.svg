@@ -1,0 +1,43 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="640" height="300" viewBox="0 0 640 300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#37474f"/>
+      <stop offset="100%" style="stop-color:#546e7a"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#546e7a;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#263238;stop-opacity:0.8"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="300" fill="url(#bg)"/>
+  <ellipse cx="320" cy="280" rx="300" ry="40" fill="url(#water)"/>
+  <!-- Body -->
+  <ellipse cx="295" cy="150" rx="155" ry="55" fill="#8d8060"/>
+  <!-- Tail fork -->
+  <polygon points="450,150 510,108 500,150" fill="#7a6e50"/>
+  <polygon points="450,150 510,192 500,150" fill="#7a6e50"/>
+  <!-- Head -->
+  <ellipse cx="148" cy="152" rx="50" ry="46" fill="#9a8c6a"/>
+  <!-- Dorsal fin 1 (spiny) -->
+  <polygon points="190,95 225,55 295,95" fill="#6e6248"/>
+  <!-- Dorsal fin 2 (soft) -->
+  <polygon points="295,95 350,68 395,95" fill="#7a7055"/>
+  <!-- Saddle markings -->
+  <ellipse cx="230" cy="145" rx="30" ry="50" fill="#6b6045" opacity="0.5"/>
+  <ellipse cx="310" cy="142" rx="30" ry="50" fill="#6b6045" opacity="0.5"/>
+  <ellipse cx="385" cy="148" rx="25" ry="45" fill="#6b6045" opacity="0.5"/>
+  <!-- Pectoral fin -->
+  <polygon points="200,172 172,215 248,212" fill="#7a6e50"/>
+  <!-- Belly -->
+  <ellipse cx="285" cy="188" rx="120" ry="18" fill="#c4b896" opacity="0.35"/>
+  <!-- Eye — glassy walleye-style -->
+  <circle cx="158" cy="142" r="12" fill="#d4c89a"/>
+  <circle cx="160" cy="142" r="8" fill="#1a1208"/>
+  <circle cx="163" cy="139" r="3" fill="white" opacity="0.8"/>
+  <!-- Mouth -->
+  <path d="M 108,156 Q 125,168 142,158" stroke="#4a3e28" stroke-width="3" fill="none"/>
+  <!-- Label -->
+  <rect x="0" y="240" width="640" height="60" fill="rgba(0,0,0,0.45)"/>
+  <text x="320" y="268" font-family="Arial,sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">Sauger &amp; Walleye</text>
+  <text x="320" y="290" font-family="Arial,sans-serif" font-size="13" fill="#b0bec5" text-anchor="middle">Sander canadensis — Ohio River</text>
+</svg>

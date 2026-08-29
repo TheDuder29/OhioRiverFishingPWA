@@ -1,0 +1,400 @@
+@page "/"
+@using OhioRiverFishingPWA.Models
+@using OhioRiverFishingPWA.Services
+@inject RiverConditionService RiverService
+
+<PageTitle>Dashboard - Wheelersburg River</PageTitle>
+
+@if (isLoading)
+{
+    <MudGrid Justify="Justify.Center" Class="mt-8">
+        <MudItem>
+            <MudProgressCircular Indeterminate="true" Size="Size.Large" Color="Color.Primary" />
+            <MudText Align="Align.Center" Class="mt-3" Typo="Typo.body1">Loading river conditions...</MudText>
+        </MudItem>
+    </MudGrid>
+}
+else
+{
+    <!-- Page header -->
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+        <MudStack Spacing="0">
+            <MudText Typo="Typo.h5" Style="font-weight:700; color:#0c2d6b;">Ohio River at Portsmouth / Wheelersburg</MudText>
+            <MudText Typo="Typo.body2" Style="color:#607d8b;">USGS Gauge 03217200 - Updated @currentConditions.Timestamp.ToLocalTime().ToString("h:mm tt")</MudText>
+        </MudStack>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Refresh"
+                   OnClick="LoadData" Size="Size.Small">Refresh</MudButton>
+    </MudStack>
+
+    <!-- Stat tiles -->
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="3" Class="pa-4" Style="border-left:4px solid #1565c0; border-radius:8px;">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Waves" Style="color:#1565c0; font-size:2rem;" />
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.caption" Style="color:#607d8b; text-transform:uppercase; letter-spacing:.8px;">Gauge Height</MudText>
+                        <MudText Typo="Typo.h5" Style="font-weight:700;">@currentConditions.GaugeHeightFeet.ToString("F1") ft</MudText>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="3" Class="pa-4" Style="border-left:4px solid #0288d1; border-radius:8px;">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Water" Style="color:#0288d1; font-size:2rem;" />
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.caption" Style="color:#607d8b; text-transform:uppercase; letter-spacing:.8px;">Flow Rate</MudText>
+                        <MudText Typo="Typo.h5" Style="font-weight:700;">@currentConditions.FlowRateCFS.ToString("N0") CFS</MudText>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="3" Class="pa-4" Style="@($"border-left:4px solid {FloodColor}; border-radius:8px;")">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Warning" Style="@($"color:{FloodColor}; font-size:2rem;")" />
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.caption" Style="color:#607d8b; text-transform:uppercase; letter-spacing:.8px;">Flood Status</MudText>
+                        <MudText Typo="Typo.h5" Style="font-weight:700;">@FloodLabel</MudText>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="3" Class="pa-4" Style="@($"border-left:4px solid {TrendColor}; border-radius:8px;")">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@TrendIcon" Style="@($"color:{TrendColor}; font-size:2rem;")" />
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.caption" Style="color:#607d8b; text-transform:uppercase; letter-spacing:.8px;">Stage Trend</MudText>
+                        <MudText Typo="Typo.h5" Style="font-weight:700;">@currentConditions.StageTrend</MudText>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Stage Forecast Chart -->
+    <MudPaper Elevation="3" Class="pa-4 mb-4" Style="border-radius:8px;">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h6" Style="font-weight:700; color:#0c2d6b;">River Stage Forecast</MudText>
+                <MudText Typo="Typo.caption" Style="color:#607d8b;">
+                    Observed (last 48 h) + NOAA 5-day forecast — Portsmouth gauge
+                </MudText>
+            </MudStack>
+            <MudStack Row="true" Spacing="3">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <div style="width:16px;height:4px;background:#1565c0;border-radius:2px;"></div>
+                    <MudText Typo="Typo.caption">Observed</MudText>
+                </MudStack>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <div style="width:16px;height:4px;background:#ef6c00;border-radius:2px;"></div>
+                    <MudText Typo="Typo.caption">Forecast</MudText>
+                </MudStack>
+            </MudStack>
+        </MudStack>
+
+        @if (_chartSeries.Count > 0)
+        {
+            <MudChart ChartType="ChartType.Line"
+                      ChartSeries="@_chartSeries"
+                      XAxisLabels="@_xLabels"
+                      Width="100%" Height="260px"
+                      ChartOptions="@_chartOptions" />
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Style="color:#607d8b;">Loading forecast data...</MudText>
+        }
+
+        <!-- Flood stage reference lines legend -->
+        <MudGrid Class="mt-2">
+            <MudItem xs="6" sm="3">
+                <MudChip Size="Size.Small" Style="background:#fff3e0; color:#e65100;">Action: 27 ft</MudChip>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudChip Size="Size.Small" Style="background:#fff8e1; color:#f57f17;">Minor Flood: 30 ft</MudChip>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudChip Size="Size.Small" Style="background:#fce4ec; color:#c62828;">Moderate: 37 ft</MudChip>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudChip Size="Size.Small" Style="background:#ef9a9a; color:#b71c1c;">Major: 45 ft</MudChip>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Lock & Dam Section -->
+    <MudText Typo="Typo.h6" Style="font-weight:700; color:#0c2d6b;" Class="mb-2">Lock &amp; Dam Status</MudText>
+    <MudGrid Class="mb-4">
+        @foreach (var lock_ in lockDams)
+        {
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="3" Style="border-radius:10px; height:100%;">
+                    <MudCardContent>
+                        <MudStack Row="true" AlignItems="AlignItems.Start" Justify="Justify.SpaceBetween" Class="mb-2">
+                            <MudStack Spacing="0">
+                                <MudText Typo="Typo.h6" Style="font-weight:700;">@lock_.Name</MudText>
+                                <MudText Typo="Typo.caption" Style="color:#607d8b;">
+                                    Ohio River Mile @lock_.RiverMile — @lock_.State
+                                </MudText>
+                            </MudStack>
+                            <MudChip Size="Size.Small" Color="Color.Info" Style="font-weight:600;">
+                                @lock_.Direction @lock_.MilesFromWheelersburg mi
+                            </MudChip>
+                        </MudStack>
+                        <MudDivider Class="my-2" />
+                        <MudGrid>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.overline" Style="color:#607d8b;">Pool</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight:600;">@lock_.PoolName</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.overline" Style="color:#607d8b;">District</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight:600;">@lock_.UsaceDistrict</MudText>
+                            </MudItem>
+                        </MudGrid>
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2" Style="font-size:.8rem;">
+                            @lock_.StatusNote
+                        </MudAlert>
+                        <MudButton Href="@lock_.ScheduleUrl" Target="_blank"
+                                   Variant="Variant.Outlined" Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Schedule"
+                                   Size="Size.Small" Class="mt-2">
+                            USACE Lock Schedule
+                        </MudButton>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+
+    <!-- Solunar windows -->
+    <MudText Typo="Typo.h6" Style="font-weight:700; color:#0c2d6b;" Class="mb-2">Today's Solunar Windows</MudText>
+    <MudGrid Class="mb-4">
+        @foreach (var window in solunarWindows)
+        {
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="2" Class="pa-3" Style="border-radius:8px;">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                        <MudStack Spacing="1">
+                            <MudChip Size="Size.Small" Color="@(window.Category == "Major" ? Color.Warning : Color.Info)" Style="font-weight:600;">@window.Category</MudChip>
+                            <MudText Typo="Typo.body2" Style="font-weight:600;">
+                                @window.StartTime.ToLocalTime().ToString("h:mm tt") - @window.EndTime.ToLocalTime().ToString("h:mm tt")
+                            </MudText>
+                        </MudStack>
+                        <MudStack AlignItems="AlignItems.Center" Spacing="0">
+                            <MudText Typo="Typo.h5" Style="font-weight:700; color:#1565c0;">@window.RatingScore.ToString("F0")</MudText>
+                            <MudText Typo="Typo.caption" Style="color:#607d8b;">/100</MudText>
+                        </MudStack>
+                    </MudStack>
+                    <MudProgressLinear Value="@window.RatingScore" Max="100"
+                                       Color="@(window.Category == "Major" ? Color.Warning : Color.Info)"
+                                       Class="mt-2" Style="border-radius:4px;" />
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+
+    <!-- Fish recommendations -->
+    <MudText Typo="Typo.h6" Style="font-weight:700; color:#0c2d6b;" Class="mb-2">Target Species Today</MudText>
+    <MudGrid>
+        @foreach (var fish in fishRecommendations)
+        {
+            var (bg1, bg2, accent) = FishColors(fish.Species);
+            <MudItem xs="12" sm="12" md="4">
+                <MudCard Elevation="3" Style="border-radius:10px; overflow:hidden; height:100%;">
+                    <!-- Real fish photo header -->
+                    <div style="position:relative; height:140px; overflow:hidden;">
+                        <img src="@fish.ImageUrl"
+                             alt="@fish.Species"
+                             style="width:100%; height:140px; object-fit:cover; display:block;"
+                             onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div style="@($"display:none; background:linear-gradient(135deg,{bg1} 0%,{bg2} 100%); height:140px; align-items:center; justify-content:center; position:absolute; top:0; left:0; right:0;")">
+                            <MudText Typo="Typo.h6" Style="color:white; font-weight:700;">@fish.Species</MudText>
+                        </div>
+                        <!-- Overlay badge -->
+                        <div style="position:absolute; top:8px; right:8px;">
+                            <MudChip Size="Size.Small"
+                                     Style="@($"background:rgba(0,0,0,.55); color:white; font-weight:700; backdrop-filter:blur(4px);")"
+                                     >@fish.ActivityLevel</MudChip>
+                        </div>
+                        <!-- Species name overlay at bottom -->
+                        <div style="position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent, rgba(0,0,0,.7)); padding:8px 12px;">
+                            <MudText Typo="Typo.subtitle1" Style="color:white; font-weight:700; text-shadow:0 1px 3px rgba(0,0,0,.6); margin:0;">@fish.Species</MudText>
+                        </div>
+                    </div>
+                    <MudCardContent>
+                        <MudStack Spacing="2" Class="mt-1">
+                            <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Start">
+                                <div style="@($"width:3px; min-height:36px; background:{accent}; border-radius:2px; margin-top:2px;")"></div>
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.caption" Style="color:#607d8b; font-weight:700; letter-spacing:.6px;">BAIT</MudText>
+                                    <MudText Typo="Typo.body2">@fish.PrimaryBait</MudText>
+                                </MudStack>
+                            </MudStack>
+                            <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Start">
+                                <div style="width:3px; min-height:36px; background:#0288d1; border-radius:2px; margin-top:2px;"></div>
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.caption" Style="color:#607d8b; font-weight:700; letter-spacing:.6px;">RIG</MudText>
+                                    <MudText Typo="Typo.body2">@fish.TacticalRig</MudText>
+                                </MudStack>
+                            </MudStack>
+                            <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Start">
+                                <div style="width:3px; min-height:36px; background:#e64a19; border-radius:2px; margin-top:2px;"></div>
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.caption" Style="color:#607d8b; font-weight:700; letter-spacing:.6px;">DEPTH / LOCATION</MudText>
+                                    <MudText Typo="Typo.body2">@fish.DepthStrategy</MudText>
+                                </MudStack>
+                            </MudStack>
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@code {
+    private RiverMetrics currentConditions = new();
+    private List<TargetFishRecommendation> fishRecommendations = new();
+    private List<SolunarWindow> solunarWindows = new();
+    private List<StageForecastPoint> forecastPoints = new();
+    private List<LockDamInfo> lockDams = new();
+    private bool isLoading = true;
+
+    // Chart state
+    private List<ChartSeries> _chartSeries = new();
+    private string[] _xLabels = Array.Empty<string>();
+    private ChartOptions _chartOptions = new() { YAxisTicks = 5, LineStrokeWidth = 2 };
+
+    private string TrendIcon => currentConditions.StageTrend switch
+    {
+        "Rising"  => Icons.Material.Filled.TrendingUp,
+        "Falling" => Icons.Material.Filled.TrendingDown,
+        _         => Icons.Material.Filled.TrendingFlat
+    };
+
+    private string TrendColor => currentConditions.StageTrend switch
+    {
+        "Rising"  => "#2e7d32",
+        "Falling" => "#c62828",
+        _         => "#0288d1"
+    };
+
+    private string FloodLabel => currentConditions.FloodCategory switch
+    {
+        "no_flooding"      => "No Flood",
+        "action"           => "Action Stage",
+        "minor"            => "Minor Flood",
+        "moderate"         => "Moderate Flood",
+        "major"            => "Major Flood",
+        "record"           => "Record Flood",
+        "fcst_not_current" => "No Forecast",
+        _                  => "Normal"
+    };
+
+    private string FloodColor => currentConditions.FloodCategory switch
+    {
+        "no_flooding"      => "#2e7d32",
+        "action"           => "#e65100",
+        "minor"            => "#f57f17",
+        "moderate"         => "#c62828",
+        "major"            => "#b71c1c",
+        "record"           => "#880e4f",
+        _                  => "#0288d1"
+    };
+
+    private static (string bg1, string bg2, string accent) FishColors(string species) => species switch
+    {
+        var s when s.Contains("Blue Cat")     => ("#0c2d6b", "#1565c0", "#1565c0"),
+        var s when s.Contains("Channel Cat")  => ("#37474f", "#546e7a", "#546e7a"),
+        var s when s.Contains("Flathead")     => ("#4e342e", "#6d4c41", "#8d6e3a"),
+        var s when s.Contains("Smallmouth")   => ("#1b5e20", "#2e7d32", "#4caf50"),
+        var s when s.Contains("Largemouth")   => ("#1a3c1a", "#2d5a2d", "#66bb6a"),
+        var s when s.Contains("Sauger")       => ("#3e2723", "#5d4037", "#a1887f"),
+        var s when s.Contains("Walleye")      => ("#2e2a1a", "#4a4228", "#c8a060"),
+        var s when s.Contains("White Bass")   => ("#1a3a5a", "#2a5a7a", "#4fc3f7"),
+        var s when s.Contains("Hybrid")       => ("#1a2a4a", "#2a4a6a", "#80cbc4"),
+        var s when s.Contains("Drum")         => ("#2a2a2a", "#424242", "#9e9e9e"),
+        var s when s.Contains("Carp")         => ("#3a2a0a", "#5a4a1a", "#c8a028"),
+        var s when s.Contains("Crappie")      => ("#1a3a2a", "#2a5a3a", "#80cbc4"),
+        var s when s.Contains("Bluegill")     => ("#0d2a3a", "#1a4a5a", "#29b6f6"),
+        var s when s.Contains("Paddlefish")   => ("#1a2a4a", "#2a3a5a", "#78909c"),
+        var s when s.Contains("Gar")          => ("#1a2a1a", "#2a3a2a", "#81c784"),
+        _                                      => ("#1565c0", "#0288d1", "#4fc3f7")
+    };
+
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        StateHasChanged();
+        try
+        {
+            var condTask    = RiverService.GetCurrentConditionsAsync();
+            var fishTask    = RiverService.GetFishRecommendationsAsync();
+            var solunarTask = RiverService.GetSolunarWindowsAsync();
+            var forecastTask = RiverService.GetStageForecastAsync();
+
+            await Task.WhenAll(condTask, fishTask, solunarTask, forecastTask);
+
+            currentConditions   = condTask.Result;
+            fishRecommendations = fishTask.Result;
+            solunarWindows      = solunarTask.Result;
+            forecastPoints      = forecastTask.Result;
+            lockDams            = RiverService.GetLockDamInfo();
+
+            BuildChart();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading data: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void BuildChart()
+    {
+        if (!forecastPoints.Any()) return;
+
+        // Sample to at most 24 points so labels stay readable
+        var observed = forecastPoints.Where(p => !p.IsForecast).ToList();
+        var forecast = forecastPoints.Where(p => p.IsForecast).ToList();
+
+        // Build a unified timeline
+        var allTimes = forecastPoints.Select(p => p.ValidTime).OrderBy(t => t).ToList();
+
+        // Observed series — value where observed, 0 otherwise
+        var obsData = allTimes.Select(t =>
+        {
+            var pt = observed.FirstOrDefault(p => Math.Abs((p.ValidTime - t).TotalMinutes) < 15);
+            return pt != null ? pt.StageFeet : double.NaN;
+        }).ToArray();
+
+        // Forecast series
+        var fctData = allTimes.Select(t =>
+        {
+            var pt = forecast.FirstOrDefault(p => Math.Abs((p.ValidTime - t).TotalHours) < 3.5);
+            return pt != null ? pt.StageFeet : double.NaN;
+        }).ToArray();
+
+        // Replace NaN with 0 for MudChart (it doesn't support NaN)
+        obsData = obsData.Select(v => double.IsNaN(v) ? 0 : v).ToArray();
+        fctData = fctData.Select(v => double.IsNaN(v) ? 0 : v).ToArray();
+
+        _xLabels = allTimes.Select(t => t.ToLocalTime().ToString("MM/dd HH:mm")).ToArray();
+
+        _chartSeries = new List<ChartSeries>
+        {
+            new ChartSeries { Name = "Observed", Data = obsData },
+            new ChartSeries { Name = "Forecast", Data = fctData }
+        };
+    }
+}

@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:5279/_framework/blazor.boot.json\" -UseBasicParsing -TimeoutSec 5)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:5279/_framework/\" -UseBasicParsing -TimeoutSec 5)",
+      "PowerShell($response = Invoke-WebRequest -Uri \"http://localhost:5279/_framework/blazor.boot.json\" -UseBasicParsing -TimeoutSec 5; $data = $response.Content | ConvertFrom-Json; $data.resources.runtime.PSObject.Properties.Name | Where-Object { $_ -match \"blazor\" } | Select-Object -First 5)",
+      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\mattc\\\\OneDrive\\\\Desktop\\\\RiverApp\\\\OhioRiverFishingPWA\\\\bin\\\\Debug\\\\net8.0\\\\wwwroot\\\\_framework\" -Name | Where-Object { $_ -match \"blazor\" })",
+      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\mattc\\\\OneDrive\\\\Desktop\\\\RiverApp\\\\OhioRiverFishingPWA\\\\bin\\\\Debug\\\\net8.0\\\\wwwroot\\\\_framework\" -Name | Where-Object { $_ -match \"blazor\\\\.web\" })",
+      "WebFetch(domain:api.water.noaa.gov)",
+      "Bash(curl -s \"https://api.water.noaa.gov/nwps/v1/gauges/PORO2\")",
+      "Bash(curl -s \"https://api.water.noaa.gov/nwps/v1/gauges/PORO2/stageflow\")",
+      "Bash(curl -s \"https://api.water.noaa.gov/nwps/v1/gauges?limit=5\")",
+      "Bash(curl -s \"https://api.water.noaa.gov/nwps/v1/gauges/PDXO3\")",
+      "Bash(curl -s \"https://api.water.noaa.gov/nwps/v1/gauges/TIFO3\")",
+      "Bash(curl -s -v \"https://api.water.noaa.gov/nwps/v1/gauges/MFAO3\")",
+      "Bash(curl -s \"https://api.water.noaa.gov/nwps/v1/gauges/CLAO3\")",
+      "Bash(curl -s \"https://api.water.noaa.gov/nwps/v1/gauges/DRTO2\")",
+      "WebFetch(domain:water.noaa.gov)",
+      "Bash(curl -s \"https://api.water.noaa.gov/nwps/v1/gauges/PORO2\" -H \"Accept: application/json\")",
+      "Bash(curl -s \"https://api.water.noaa.gov/nwps/v1/gauges?state=OR&limit=3\" -H \"Accept: application/json\")",
+      "Bash(curl -s \"https://api.water.noaa.gov/nwps/v1/gauges/AACS2\")",
+      "Bash(curl -s \"https://api.water.noaa.gov/nwps/v1/gauges/AACS2/stageflow\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({'observed_metadata': {k:v for k,v in d['observed'].items\\(\\) if k!='data'}, 'observed_data_sample': d['observed']['data'][:2], 'forecast_metadata': {k:v for k,v in d.get\\('forecast',{}\\).items\\(\\) if k!='data'} if d.get\\('forecast'\\) else None, 'forecast_data_sample': d.get\\('forecast',{}\\).get\\('data',['NONE']\\)[:2], 'top_level_keys': list\\(d.keys\\(\\)\\)}, indent=2\\)\\)\")",
+      "WebFetch(domain:water.weather.gov)",
+      "WebFetch(domain:waterservices.usgs.gov)",
+      "PowerShell(Invoke-WebRequest -Uri \"https://api.water.noaa.gov/nwps/v1/gauges/PORO1\" -UseBasicParsing -TimeoutSec 10)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:5279\" -UseBasicParsing -TimeoutSec 5)",
+      "WebFetch(domain:commons.wikimedia.org)",
+      "WebFetch(domain:upload.wikimedia.org)",
+      "PowerShell(gh auth status 2>&1)"
+    ]
+  }
+}

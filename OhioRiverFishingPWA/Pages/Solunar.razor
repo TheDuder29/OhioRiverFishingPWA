@@ -1,0 +1,55 @@
+@page "/solunar"
+@using OhioRiverFishingPWA.Models
+@using OhioRiverFishingPWA.Services
+@inject RiverConditionService RiverService
+
+<PageTitle>Solunar Windows – Wheelersburg River</PageTitle>
+
+<MudText Typo="Typo.h5" Style="font-weight:700; color:#0c2d6b;" Class="mb-1">🌙 Solunar Windows</MudText>
+<MudText Typo="Typo.body2" Style="color:#607d8b;" Class="mb-4">Best feeding times based on sun and moon position</MudText>
+
+@if (isLoading)
+{
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    <MudGrid>
+        @foreach (var window in solunarWindows)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="3" Style="border-radius:10px;">
+                    <MudCardContent>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2">
+                            <MudChip Color="@(window.Category == "Major" ? Color.Warning : Color.Info)"
+                                     Style="font-weight:700; font-size:1rem;">
+                                @window.Category Window
+                            </MudChip>
+                            <MudText Typo="Typo.h4" Style="font-weight:700; color:#1565c0;">@window.RatingScore.ToString("F0")<MudText Typo="Typo.caption">/100</MudText></MudText>
+                        </MudStack>
+                        <MudText Typo="Typo.h6">
+                            @window.StartTime.ToLocalTime().ToString("h:mm tt") – @window.EndTime.ToLocalTime().ToString("h:mm tt")
+                        </MudText>
+                        <MudText Typo="Typo.body2" Style="color:#607d8b;" Class="mb-2">
+                            Duration: @((window.EndTime - window.StartTime).TotalMinutes.ToString("F0")) min
+                        </MudText>
+                        <MudProgressLinear Value="@window.RatingScore" Max="100"
+                                           Color="@(window.Category == "Major" ? Color.Warning : Color.Info)"
+                                           Style="border-radius:4px; height:10px;" />
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@code {
+    private List<SolunarWindow> solunarWindows = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        solunarWindows = await RiverService.GetSolunarWindowsAsync();
+        isLoading = false;
+    }
+}

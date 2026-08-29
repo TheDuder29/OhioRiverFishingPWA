@@ -1,0 +1,65 @@
+﻿@page "/species"
+@using OhioRiverFishingPWA.Models
+@using OhioRiverFishingPWA.Services
+@inject RiverConditionService RiverService
+
+<PageTitle>Fish Species - Wheelersburg River</PageTitle>
+
+<MudText Typo="Typo.h5" Style="font-weight:700; color:#0c2d6b;" Class="mb-1">Target Species Guide</MudText>
+<MudText Typo="Typo.body2" Style="color:#607d8b;" Class="mb-4">Ohio River - Wheelersburg area - tactics, rigs, and depth strategies</MudText>
+
+@if (isLoading)
+{
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else
+{
+    @foreach (var fish in fishRecommendations)
+    {
+        <MudCard Elevation="3" Class="mb-4" Style="border-radius:10px; overflow:hidden;">
+            <MudGrid Spacing="0">
+                <MudItem xs="12" sm="4">
+                    <img src="@(string.IsNullOrEmpty(fish.ImageUrl) ? "https://placehold.co/400x250/1565c0/ffffff?text=" + Uri.EscapeDataString(fish.Species) : fish.ImageUrl)"
+                         style="width:100%; height:220px; object-fit:cover;"
+                         alt="@fish.Species"
+                         onerror="this.onerror=null; this.src='https://placehold.co/400x250/1565c0/ffffff?text=Image+Missing';" />
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudCardContent>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-2">
+                            <MudText Typo="Typo.h5" Style="font-weight:700;">@fish.Species</MudText>
+                            <MudChip Color="@(fish.ActivityLevel == "Active" ? Color.Success : fish.ActivityLevel == "Moderate" ? Color.Warning : Color.Default)"
+                                     Style="font-weight:600;">@fish.ActivityLevel</MudChip>
+                        </MudStack>
+                        <MudDivider Class="mb-3" />
+                        <MudGrid>
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.overline" Style="color:#607d8b;">Primary Bait</MudText>
+                                <MudText Typo="Typo.body2">@fish.PrimaryBait</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.overline" Style="color:#607d8b;">Tactical Rig</MudText>
+                                <MudText Typo="Typo.body2">@fish.TacticalRig</MudText>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudText Typo="Typo.overline" Style="color:#607d8b;">Depth / Location</MudText>
+                                <MudText Typo="Typo.body2">@fish.DepthStrategy</MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudItem>
+            </MudGrid>
+        </MudCard>
+    }
+}
+
+@code {
+    private List<TargetFishRecommendation> fishRecommendations = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        fishRecommendations = await RiverService.GetFishRecommendationsAsync();
+        isLoading = false;
+    }
+}

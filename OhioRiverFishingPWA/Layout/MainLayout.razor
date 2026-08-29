@@ -1,0 +1,68 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="_theme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="2" Style="background: linear-gradient(90deg, #0c2d6b 0%, #1565c0 60%, #0288d1 100%);">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
+        <MudIcon Icon="@Icons.Material.Filled.Waves" Class="mr-2" Style="color:#4fc3f7;" />
+        <MudText Typo="Typo.h6" Style="font-weight:700; letter-spacing:.5px;">Wheelersburg River &amp; Fishing</MudText>
+        <MudSpacer />
+        <MudText Typo="Typo.caption" Style="opacity:.7; display:none; display:block;">Ohio River · Mile 356</MudText>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2" Variant="DrawerVariant.Responsive"
+               Style="background: linear-gradient(180deg, #0c2d6b 0%, #1a237e 100%);">
+        <MudDrawerHeader>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.Phishing" Style="color:#4fc3f7; font-size:2rem;" />
+                <MudText Typo="Typo.subtitle1" Style="color:white; font-weight:700;">River Fishing</MudText>
+            </MudStack>
+        </MudDrawerHeader>
+        <MudNavMenu>
+            <MudNavLink Href="" Match="NavLinkMatch.All"
+                        Icon="@Icons.Material.Filled.Dashboard"
+                        IconColor="Color.Info">
+                <MudText Style="color:rgba(255,255,255,.9);">Dashboard</MudText>
+            </MudNavLink>
+            <MudNavLink Href="solunar"
+                        Icon="@Icons.Material.Filled.WbSunny"
+                        IconColor="Color.Warning">
+                <MudText Style="color:rgba(255,255,255,.9);">Solunar Windows</MudText>
+            </MudNavLink>
+            <MudNavLink Href="species"
+                        Icon="@Icons.Material.Filled.SetMeal"
+                        IconColor="Color.Success">
+                <MudText Style="color:rgba(255,255,255,.9);">Fish Species</MudText>
+            </MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-4 pt-6">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private readonly MudTheme _theme = new()
+    {
+        Palette = new Palette
+        {
+            Primary = "#1565c0",
+            Secondary = "#0288d1",
+            AppbarBackground = "#0c2d6b",
+            Background = "#eef2f7",
+            Surface = "#ffffff",
+            TextPrimary = "#1a2744",
+            DrawerBackground = "#0c2d6b",
+            DrawerText = "rgba(255,255,255,0.9)"
+        }
+    };
+}
