@@ -209,6 +209,100 @@ namespace OhioRiverFishingPWA.Services
             };
         }
 
+        // ── Weather (Open-Meteo — free, no API key) ─────────────────────────
+        // Wheelersburg, OH: 38.7318° N, 82.8499° W
+
+        public async Task<(WeatherConditions Current, List<WeatherForecastDay> Forecast)> GetWeatherAsync()
+        {
+            try
+            {
+                var url = "https://api.open-meteo.com/v1/forecast" +
+                          "?latitude=38.7318&longitude=-82.8499" +
+                          "&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m" +
+                          "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
+                          "&temperature_unit=fahrenheit&wind_speed_unit=mph" +
+                          "&timezone=America%2FNew_York&forecast_days=7";
+
+                var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var data = await _httpClient.GetFromJsonAsync<OpenMeteoResponse>(url, opts);
+
+                var current = new WeatherConditions();
+                if (data?.Current != null)
+                {
+                    current.TemperatureF     = Math.Round(data.Current.Temperature2m, 1);
+                    current.WeatherCode      = data.Current.WeatherCode;
+                    current.WindSpeedMph     = Math.Round(data.Current.WindSpeed10m, 1);
+                    current.RelativeHumidity = data.Current.RelativeHumidity2m;
+                    current.Description      = WmoDescription(data.Current.WeatherCode);
+                    current.Icon             = WmoIcon(data.Current.WeatherCode);
+                }
+
+                var forecast = new List<WeatherForecastDay>();
+                if (data?.Daily != null)
+                {
+                    for (int i = 0; i < data.Daily.Time.Count && i < 7; i++)
+                    {
+                        forecast.Add(new WeatherForecastDay
+                        {
+                            Date              = DateTime.Parse(data.Daily.Time[i]),
+                            WeatherCode       = data.Daily.WeatherCode[i],
+                            TempHighF         = Math.Round(data.Daily.Temperature2mMax[i], 0),
+                            TempLowF          = Math.Round(data.Daily.Temperature2mMin[i], 0),
+                            PrecipProbability = data.Daily.PrecipitationProbabilityMax[i] ?? 0,
+                            Description       = WmoDescription(data.Daily.WeatherCode[i]),
+                            Icon              = WmoIcon(data.Daily.WeatherCode[i])
+                        });
+                    }
+                }
+
+                return (current, forecast);
+            }
+            catch
+            {
+                return (new WeatherConditions { TemperatureF = 72, Description = "Unavailable", Icon = "🌤️" },
+                        new List<WeatherForecastDay>());
+            }
+        }
+
+        private static string WmoDescription(int code) => code switch
+        {
+            0            => "Clear Sky",
+            1            => "Mostly Clear",
+            2            => "Partly Cloudy",
+            3            => "Overcast",
+            45 or 48     => "Foggy",
+            51 or 53     => "Light Drizzle",
+            55           => "Drizzle",
+            61           => "Light Rain",
+            63           => "Moderate Rain",
+            65           => "Heavy Rain",
+            71 or 73     => "Light Snow",
+            75           => "Heavy Snow",
+            80           => "Light Showers",
+            81           => "Showers",
+            82           => "Heavy Showers",
+            95           => "Thunderstorm",
+            96 or 99     => "Severe Thunderstorm",
+            _            => "Mixed Conditions"
+        };
+
+        private static string WmoIcon(int code) => code switch
+        {
+            0            => "☀️",
+            1            => "🌤️",
+            2            => "⛅",
+            3            => "☁️",
+            45 or 48     => "🌫️",
+            51 or 53 or 55 => "🌦️",
+            61 or 63     => "🌧️",
+            65           => "🌧️",
+            71 or 73 or 75 => "❄️",
+            80 or 81 or 82 => "🌧️",
+            95           => "⛈️",
+            96 or 99     => "⛈️",
+            _            => "🌤️"
+        };
+
         // ── Fish Recommendations ─────────────────────────────────────────────
 
         public async Task<List<TargetFishRecommendation>> GetFishRecommendationsAsync()

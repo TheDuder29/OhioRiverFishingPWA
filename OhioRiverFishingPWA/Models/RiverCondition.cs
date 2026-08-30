@@ -2,6 +2,64 @@ using System.Text.Json.Serialization;
 
 namespace OhioRiverFishingPWA.Models;
 
+// ── Weather models ────────────────────────────────────────────────────────────
+
+public class WeatherConditions
+{
+    public double TemperatureF { get; set; }
+    public int WeatherCode { get; set; }
+    public double WindSpeedMph { get; set; }
+    public int RelativeHumidity { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public string Icon { get; set; } = "☀️";
+}
+
+public class WeatherForecastDay
+{
+    public DateTime Date { get; set; }
+    public double TempHighF { get; set; }
+    public double TempLowF { get; set; }
+    public int PrecipProbability { get; set; }
+    public int WeatherCode { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public string Icon { get; set; } = "☀️";
+}
+
+// Open-Meteo deserialization
+public class OpenMeteoResponse
+{
+    [JsonPropertyName("current")]
+    public OpenMeteoCurrent? Current { get; set; }
+    [JsonPropertyName("daily")]
+    public OpenMeteoDaily? Daily { get; set; }
+}
+
+public class OpenMeteoCurrent
+{
+    [JsonPropertyName("temperature_2m")]
+    public double Temperature2m { get; set; }
+    [JsonPropertyName("weather_code")]
+    public int WeatherCode { get; set; }
+    [JsonPropertyName("wind_speed_10m")]
+    public double WindSpeed10m { get; set; }
+    [JsonPropertyName("relative_humidity_2m")]
+    public int RelativeHumidity2m { get; set; }
+}
+
+public class OpenMeteoDaily
+{
+    [JsonPropertyName("time")]
+    public List<string> Time { get; set; } = new();
+    [JsonPropertyName("weather_code")]
+    public List<int> WeatherCode { get; set; } = new();
+    [JsonPropertyName("temperature_2m_max")]
+    public List<double> Temperature2mMax { get; set; } = new();
+    [JsonPropertyName("temperature_2m_min")]
+    public List<double> Temperature2mMin { get; set; } = new();
+    [JsonPropertyName("precipitation_probability_max")]
+    public List<int?> PrecipitationProbabilityMax { get; set; } = new();
+}
+
 public class RiverMetrics
 {
     public double GaugeHeightFeet { get; set; }

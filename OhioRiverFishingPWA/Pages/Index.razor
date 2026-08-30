@@ -23,7 +23,7 @@ else
             <MudText Typo="Typo.body2" Style="color:#607d8b;">USGS Gauge 03217200 - Updated @currentConditions.Timestamp.ToLocalTime().ToString("h:mm tt")</MudText>
         </MudStack>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Refresh"
-                   OnClick="LoadData" Size="Size.Small">Refresh</MudButton>
+                   OnClick="LoadData" Size="Size.Small" Style="padding:8px 16px; min-width:100px;">Refresh</MudButton>
     </MudStack>
 
     <!-- Stat tiles -->
@@ -73,6 +73,60 @@ else
             </MudPaper>
         </MudItem>
     </MudGrid>
+
+    <!-- Weather Section -->
+    <MudPaper Elevation="3" Class="pa-4 mb-4" Style="border-radius:8px;">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h6" Style="font-weight:700; color:#0c2d6b;">
+                    @weather.Icon &nbsp;Wheelersburg Weather
+                </MudText>
+                <MudText Typo="Typo.caption" Style="color:#607d8b;">Open-Meteo — Wheelersburg, OH</MudText>
+            </MudStack>
+            <!-- Current conditions summary -->
+            <MudStack AlignItems="AlignItems.End" Spacing="0">
+                <MudText Typo="Typo.h4" Style="font-weight:700; color:#0c2d6b;">@weather.TemperatureF.ToString("F0")°F</MudText>
+                <MudText Typo="Typo.body2" Style="color:#607d8b;">@weather.Description</MudText>
+            </MudStack>
+        </MudStack>
+
+        <!-- Current detail chips -->
+        <MudStack Row="true" Spacing="2" Class="mb-3" Style="flex-wrap:wrap;">
+            <MudChip Size="Size.Small" Icon="@Icons.Material.Filled.Air" Style="background:#e3f2fd; color:#0d47a1;">
+                Wind @weather.WindSpeedMph.ToString("F0") mph
+            </MudChip>
+            <MudChip Size="Size.Small" Icon="@Icons.Material.Filled.WaterDrop" Style="background:#e8f5e9; color:#1b5e20;">
+                Humidity @weather.RelativeHumidity%
+            </MudChip>
+        </MudStack>
+
+        <!-- 7-day forecast strip -->
+        @if (weatherForecast.Count > 0)
+        {
+            <MudDivider Class="mb-3" />
+            <MudText Typo="Typo.overline" Style="color:#607d8b; letter-spacing:.8px;" Class="mb-2">7-Day Forecast</MudText>
+            <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;">
+                @foreach (var day in weatherForecast)
+                {
+                    <div style="min-width:80px; flex:0 0 auto; background:#f5f7fa; border-radius:8px; padding:10px 8px; text-align:center;">
+                        <MudText Typo="Typo.caption" Style="font-weight:700; color:#607d8b;">
+                            @(day.Date.Date == DateTime.Today ? "Today" : day.Date.ToString("ddd"))
+                        </MudText>
+                        <div style="font-size:1.6rem; margin:4px 0;">@day.Icon</div>
+                        <MudText Typo="Typo.caption" Style="color:#607d8b; font-size:.68rem;">@day.Description</MudText>
+                        <MudStack Row="true" Justify="Justify.Center" Spacing="1" Class="mt-1">
+                            <MudText Typo="Typo.caption" Style="font-weight:700;">@day.TempHighF.ToString("F0")°</MudText>
+                            <MudText Typo="Typo.caption" Style="color:#90a4ae;">@day.TempLowF.ToString("F0")°</MudText>
+                        </MudStack>
+                        @if (day.PrecipProbability > 0)
+                        {
+                            <MudText Typo="Typo.caption" Style="color:#1565c0; font-size:.68rem;">💧@day.PrecipProbability%</MudText>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </MudPaper>
 
     <!-- Stage Forecast Chart -->
     <MudPaper Elevation="3" Class="pa-4 mb-4" Style="border-radius:8px;">
@@ -262,6 +316,8 @@ else
     private List<SolunarWindow> solunarWindows = new();
     private List<StageForecastPoint> forecastPoints = new();
     private List<LockDamInfo> lockDams = new();
+    private WeatherConditions weather = new() { Icon = "🌤️", Description = "Loading..." };
+    private List<WeatherForecastDay> weatherForecast = new();
     private bool isLoading = true;
 
     // Chart state
@@ -334,18 +390,21 @@ else
         StateHasChanged();
         try
         {
-            var condTask    = RiverService.GetCurrentConditionsAsync();
-            var fishTask    = RiverService.GetFishRecommendationsAsync();
-            var solunarTask = RiverService.GetSolunarWindowsAsync();
+            var condTask     = RiverService.GetCurrentConditionsAsync();
+            var fishTask     = RiverService.GetFishRecommendationsAsync();
+            var solunarTask  = RiverService.GetSolunarWindowsAsync();
             var forecastTask = RiverService.GetStageForecastAsync();
+            var weatherTask  = RiverService.GetWeatherAsync();
 
-            await Task.WhenAll(condTask, fishTask, solunarTask, forecastTask);
+            await Task.WhenAll(condTask, fishTask, solunarTask, forecastTask, weatherTask);
 
             currentConditions   = condTask.Result;
             fishRecommendations = fishTask.Result;
             solunarWindows      = solunarTask.Result;
             forecastPoints      = forecastTask.Result;
             lockDams            = RiverService.GetLockDamInfo();
+            weather             = weatherTask.Result.Current;
+            weatherForecast     = weatherTask.Result.Forecast;
 
             BuildChart();
         }
