@@ -13,7 +13,8 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 // Register our services
 builder.Services.AddScoped<RiverConditionService>();
-builder.Services.AddSingleton<FishingCalculators>();
+builder.Services.AddScoped<FishingCalculators>();
 builder.Services.AddMudServices();
+
 
 await builder.Build().RunAsync();

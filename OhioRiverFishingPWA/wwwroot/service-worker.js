@@ -1,9 +1,9 @@
-const CACHE_NAME = 'ohio-river-fishing-cache-v3';
+const CACHE_NAME = 'ohio-river-fishing-cache-v4';
 const urlsToCache = [
     '/',
     '/css/app.css',
     '/manifest.json',
-    '/icon-512.png'
+    '/favicon.svg?v=4'
 ];
 
 self.addEventListener('install', (event) => {

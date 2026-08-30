@@ -5,11 +5,13 @@
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0284c7",
-  "icons": [
+    "icons": [
     {
-      "src": "icon-512.png",
+      "src": "favicon.svg?v=4",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
+
 }
