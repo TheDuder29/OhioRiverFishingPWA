@@ -1,17 +1,35 @@
 {
   "name": "Wheelersburg River & Fishing Monitor",
-  "short_name": "OhioRiverFish",
+  "short_name": "River Fish",
+  "description": "Real-time Ohio River conditions, fish species guide, and solunar windows for Wheelersburg, OH",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0284c7",
-    "icons": [
+  "background_color": "#0c2d6b",
+  "theme_color": "#0288d1",
+  "icons": [
     {
-      "src": "favicon.svg?v=4",
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
-
 }

@@ -26,6 +26,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Generate PNG icons from SVG
+        run: |
+          sudo apt-get install -y librsvg2-bin
+          rsvg-convert -w 192 -h 192 OhioRiverFishingPWA/wwwroot/favicon.svg -o OhioRiverFishingPWA/wwwroot/icon-192.png
+          rsvg-convert -w 512 -h 512 OhioRiverFishingPWA/wwwroot/favicon.svg -o OhioRiverFishingPWA/wwwroot/icon-512.png
+          echo "Icons generated:"
+          ls -lh OhioRiverFishingPWA/wwwroot/icon-*.png
+
       - name: Restore dependencies
         run: dotnet restore OhioRiverFishingPWA/OhioRiverFishingPWA.csproj
 
