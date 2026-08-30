@@ -40,6 +40,38 @@ jobs:
       - name: Publish
         run: dotnet publish OhioRiverFishingPWA/OhioRiverFishingPWA.csproj -c Release -o publish --nologo
 
+      - name: Replace published service worker with simple no-SRI version
+        run: |
+          cat > publish/wwwroot/service-worker.js << 'SWEOF'
+          const CACHE_NAME = 'ohio-river-fishing-v7';
+
+          self.addEventListener('install', event => {
+            self.skipWaiting();
+          });
+
+          self.addEventListener('activate', event => {
+            event.waitUntil(
+              Promise.all([
+                self.clients.claim(),
+                caches.keys().then(keys =>
+                  Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+                )
+              ])
+            );
+          });
+
+          self.addEventListener('fetch', event => {
+            const url = new URL(event.request.url);
+            if (url.origin !== location.origin) return;
+            if (url.pathname.includes('/_framework/')) return;
+            if (url.pathname.includes('/_content/')) return;
+            event.respondWith(
+              caches.match(event.request).then(cached => cached || fetch(event.request))
+            );
+          });
+          SWEOF
+          echo "Service worker replaced (no SRI)"
+
       - name: Fix base href and update SRI hash in service worker manifest
         run: |
           python3 << 'EOF'
