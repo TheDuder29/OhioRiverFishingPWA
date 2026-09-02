@@ -1,21 +1,24 @@
 using OhioRiverFishingPWA.Models;
 using System.Net.Http.Json;
 using System.Text.Json;
+using OhioRiverFishingPWA.Services;
 
 namespace OhioRiverFishingPWA.Services
 {
     public class RiverConditionService
     {
         private readonly HttpClient _httpClient;
+        private readonly LockScheduleService _lockScheduleService;
 
         // Correct USGS gauge: Ohio River at Portsmouth, OH (7 miles from Wheelersburg)
         private const string UsgsGauge = "03217200";
         // NOAA NWPS gauge: PORO1 = Ohio River at Portsmouth
         private const string NoaaGaugeId = "PORO1";
 
-        public RiverConditionService(HttpClient httpClient)
+        public RiverConditionService(HttpClient httpClient, LockScheduleService lockScheduleService)
         {
             _httpClient = httpClient;
+            _lockScheduleService = lockScheduleService;
         }
 
         // ── Current Conditions (USGS real-time) ─────────────────────────────
@@ -190,7 +193,7 @@ namespace OhioRiverFishingPWA.Services
                     State = "KY",
                     PoolName = "Greenup Pool",
                     UsaceDistrict = "Huntington District",
-                    ScheduleUrl = "https://corpslocks.usace.army.mil/lpwb/f?p=121:1",
+                    ScheduleUrl = "https://water.usace.army.mil/overview/lrh/locations/greenupld",
                     StatusNote = "Operates 24/7. Priority to commercial tows. Recreational vessels may experience 30-90 min waits during heavy traffic. Call (606) 473-9608 for current conditions."
                 },
                 new()
@@ -203,7 +206,7 @@ namespace OhioRiverFishingPWA.Services
                     State = "OH/KY",
                     PoolName = "Meldahl Pool",
                     UsaceDistrict = "Huntington District",
-                    ScheduleUrl = "https://corpslocks.usace.army.mil/lpwb/f?p=121:1",
+                    ScheduleUrl = "https://water.usace.army.mil/overview/lrh/locations/captameldahlld",
                     StatusNote = "Operates 24/7. Recreational lockage available. Call (513) 876-8270 for locking schedule and wait times."
                 }
             };
@@ -326,6 +329,35 @@ namespace OhioRiverFishingPWA.Services
                 new() { Species = "Paddlefish",             ActivityLevel = "Seasonal", PrimaryBait = "Filter feeder — not caught on bait; legally snagged during open season",  TacticalRig = "Heavy treble hook snag rig (4-6 oz weight) on 40-50 lb line",               DepthStrategy = "Deep river channels during late winter/spring run, below dams",              ImageUrl = "images/paddlefish.jpg" },
                 new() { Species = "Longnose Gar",           ActivityLevel = "Moderate", PrimaryBait = "Frayed nylon rope lure (snags in teeth), live minnows, or cut bait",      TacticalRig = "Rope lure tied to heavy mono — no hook needed, teeth tangle in fibers",     DepthStrategy = "Shallow backwaters, near surface in calm areas, under logs (2-8 ft)",      ImageUrl = "images/longnose-gar.jpg" }
             };
+        }
+        
+        public async Task<List<LockDamInfo>> GetLockScheduleAsync()
+        {
+            var lockSchedules = new List<LockDamInfo>();
+            
+            // Greenup Lock Schedule URL
+            var greenupUrl = "https://water.usace.army.mil/overview/lrh/locations/greenupld";
+            var greenupSchedule = await _lockScheduleService.GetLockScheduleFromUSACE(greenupUrl);
+            
+            // Meldahl Lock Schedule URL  
+            var meldahlUrl = "https://water.usace.army.mil/overview/lrh/locations/captameldahlld";
+            var meldahlSchedule = await _lockScheduleService.GetLockScheduleFromUSACE(meldahlUrl);
+            
+            lockSchedules.Add(new LockDamInfo
+            {
+                Name = "Greenup Lock",
+                ScheduleUrl = greenupUrl,
+                StatusNote = greenupSchedule
+            });
+            
+            lockSchedules.Add(new LockDamInfo
+            {
+                Name = "Meldahl Lock",
+                ScheduleUrl = meldahlUrl,
+                StatusNote = meldahlSchedule
+            });
+            
+            return lockSchedules;
         }
     }
 }

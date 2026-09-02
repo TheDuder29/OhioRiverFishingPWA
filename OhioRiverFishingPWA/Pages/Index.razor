@@ -216,6 +216,7 @@ else
                                    Variant="Variant.Outlined" Color="Color.Primary"
                                    StartIcon="@Icons.Material.Filled.Schedule"
                                    Size="Size.Small" Class="mt-2">
+                             USACE Navigation Info
                             USACE Lock Schedule
                         </MudButton>
                     </MudCardContent>
@@ -316,6 +317,7 @@ else
     private List<SolunarWindow> solunarWindows = new();
     private List<StageForecastPoint> forecastPoints = new();
     private List<LockDamInfo> lockDams = new();
+    private List<LockDamInfo> lockSchedules = new();
     private WeatherConditions weather = new() { Icon = "🌤️", Description = "Loading..." };
     private List<WeatherForecastDay> weatherForecast = new();
     private bool isLoading = true;
@@ -403,6 +405,7 @@ else
             solunarWindows      = solunarTask.Result;
             forecastPoints      = forecastTask.Result;
             lockDams            = RiverService.GetLockDamInfo();
+            lockSchedules       = await RiverService.GetLockScheduleAsync();
             weather             = weatherTask.Result.Current;
             weatherForecast     = weatherTask.Result.Forecast;
 

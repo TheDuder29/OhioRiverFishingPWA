@@ -1,0 +1,40 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="640" height="300" viewBox="0 0 640 300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d47a1"/>
+      <stop offset="100%" style="stop-color:#1565c0"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1976d2;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#0d47a1;stop-opacity:0.8"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="300" fill="url(#bg)"/>
+  <ellipse cx="320" cy="280" rx="300" ry="40" fill="url(#water)"/>
+  <!-- Fish body -->
+  <ellipse cx="290" cy="155" rx="140" ry="58" fill="#4a90c4"/>
+  <!-- Tail -->
+  <polygon points="430,155 490,110 490,200" fill="#3a7db5"/>
+  <!-- Head/mouth area -->
+  <ellipse cx="165" cy="158" rx="45" ry="42" fill="#5a9fd4"/>
+  <!-- Mouth barbels -->
+  <line x1="140" y1="160" x2="100" y2="175" stroke="#2a6a94" stroke-width="3" stroke-linecap="round"/>
+  <line x1="140" y1="165" x2="95" y2="185" stroke="#2a6a94" stroke-width="3" stroke-linecap="round"/>
+  <line x1="140" y1="155" x2="98" y2="165" stroke="#2a6a94" stroke-width="3" stroke-linecap="round"/>
+  <!-- Dorsal fin -->
+  <polygon points="230,97 270,60 310,97" fill="#3a7db5"/>
+  <!-- Pectoral fin -->
+  <polygon points="200,175 170,215 240,210" fill="#3a7db5"/>
+  <!-- Adipose fin -->
+  <ellipse cx="390" cy="120" rx="22" ry="12" fill="#3a7db5"/>
+  <!-- Eye -->
+  <circle cx="175" cy="148" r="9" fill="white"/>
+  <circle cx="177" cy="148" r="5" fill="#1a1a2e"/>
+  <circle cx="179" cy="146" r="2" fill="white"/>
+  <!-- Belly highlight -->
+  <ellipse cx="280" cy="185" rx="110" ry="22" fill="#6aaedd" opacity="0.3"/>
+  <!-- Label -->
+  <rect x="0" y="240" width="640" height="60" fill="rgba(0,0,0,0.45)"/>
+  <text x="320" y="268" font-family="Arial,sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">Blue Catfish</text>
+  <text x="320" y="290" font-family="Arial,sans-serif" font-size="13" fill="#90caf9" text-anchor="middle">Ictalurus furcatus — Ohio River</text>
+</svg>
